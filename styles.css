@@ -12,6 +12,7 @@
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
     --info-color: #06b6d4;
+    --gold-color: #f59e0b;
     --bg-color: #0f172a;
     --card-bg: #1e293b;
     --card-bg-hover: #334155;
@@ -35,6 +36,60 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+}
+
+/* ===== Tab 导航样式（新增）===== */
+.tab-navigation {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 8px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.nav-tab {
+    flex: 1;
+    padding: 14px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.nav-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-tab.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ===== Tab 内容区域（新增）===== */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* 头部样式 */
@@ -301,6 +356,203 @@ body {
     background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
 }
+
+/* ===== 纳斯达克100样式（新增）===== */
+.ndx-section, .gold-section {
+    margin-bottom: 30px;
+}
+
+.ndx-header, .gold-header {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.ndx-title h2, .gold-title h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ndx-subtitle, .gold-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+}
+
+.ndx-price-card, .gold-price-card {
+    margin-top: 24px;
+    padding: 24px;
+    background: rgba(59, 130, 246, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.gold-price-card {
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.price-main {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.price-value {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.gold-price-card .price-value {
+    color: var(--gold-color);
+}
+
+.price-change {
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.price-details {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.price-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.price-item span:first-child {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.price-item span:last-child {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ndx-chart-section, .gold-chart-section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.ndx-chart, .gold-chart {
+    height: 400px;
+}
+
+/* ===== 黄金加仓建议样式（新增）===== */
+.gold-advice {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.gold-advice-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gold-signal {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    background: rgba(245, 158, 11, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.signal-icon {
+    font-size: 3rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 50%;
+}
+
+.signal-text h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--gold-color);
+}
+
+.signal-text p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.gold-strategy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.strategy-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+}
+
+.strategy-label {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+}
+
+.strategy-value {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--gold-color);
+}
+
+.gold-analysis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.analysis-card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border-left: 4px solid var(--gold-color);
+}
+
+.analysis-card h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gold-color);
+    margin-bottom: 12px;
+}
+
+.analysis-card p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
 /* 定投建议区域 */
 .investment-advice {
     background: var(--card-bg);
@@ -466,7 +718,7 @@ body {
     gap: 16px;
 }
 
-.chart-header h2 {
+.chart-header h2, .chart-header h3 {
     font-size: 1.25rem;
     font-weight: 600;
 }
@@ -574,6 +826,16 @@ body {
         padding: 16px;
     }
 
+    .tab-navigation {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-tab {
+        padding: 12px 16px;
+        font-size: 0.9375rem;
+    }
+
     .header {
         flex-direction: column;
         gap: 16px;
@@ -588,11 +850,15 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .main-value {
+    .main-value, .price-value {
         font-size: 2.5rem;
     }
 
-    .advice-summary {
+    .price-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .advice-summary, .gold-signal {
         flex-direction: column;
         text-align: center;
     }
@@ -609,6 +875,10 @@ body {
 
     .gauge-labels {
         font-size: 0.625rem;
+    }
+
+    .ndx-chart, .gold-chart {
+        height: 300px;
     }
 }
 
