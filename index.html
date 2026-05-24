@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>纳斯达克市场数据监控 | 定投助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <h1>纳斯达克市场监控</h1>
+            </div>
+            <div class="last-update">
+                <span class="update-label">最后更新</span>
+                <span id="lastUpdateTime" class="update-time">--</span>
+                <span class="update-status" id="updateStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">实时</span>
+                </span>
+            </div>
+        </header>
+
+        <section class="main-indicators">
+            <div class="indicator-card vix-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                    <h2>VIX 恐慌指数</h2>
+                </div>
+                <div class="card-body">
+                    <div class="value-section">
+                        <span id="vixValue" class="main-value">--</span>
+                        <span id="vixChange" class="change-value">--</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-bar">
+                            <div id="vixGauge" class="gauge-fill"></div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span>平静</span>
+                            <span>轻度</span>
+                            <span>恐慌</span>
+                            <span>极度</span>
+                        </div>
+                    </div>
+                    <div id="vixStatus" class="status-badge">--</div>
+                </div>
+            </div>
+
+            <div class="indicator-card pe-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
+                    <h2>纳斯达克 PE 比率</h2>
+                </div>
+                <div class="card-body">
+                    <div class="value-section">
+                        <span id="peValue" class="main-value">--</span>
+                        <span id="peChange" class="change-value">--</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-bar">
+                            <div id="peGauge" class="gauge-fill"></div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span>低估</span>
+                            <span>合理</span>
+                            <span>偏高</span>
+                            <span>高估</span>
+                        </div>
+                    </div>
+                    <div id="peStatus" class="status-badge">--</div>
+                </div>
+            </div>
+
+            <div class="indicator-card fear-greed-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <h2>恐惧贪婪指数</h2>
+                </div>
+                <div class="card-body">
+                    <div class="value-section">
+                        <span id="fearGreedValue" class="main-value">--</span>
+                        <span id="fearGreedChange" class="change-value">--</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-bar fear-greed-gradient">
+                            <div id="fearGreedGauge" class="gauge-fill"></div>
+                        </div>
+                        <div class="gauge-labels">
+                            <span>极度恐惧</span>
+                            <span>恐惧</span>
+                            <span>中性</span>
+                            <span>贪婪</span>
+                            <span>极度贪婪</span>
+                        </div>
+                    </div>
+                    <div id="fearGreedStatus" class="status-badge">--</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="investment-advice">
+            <div class="advice-header">
+                <svg class="advice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h2>智能定投建议</h2>
+            </div>
+            
+            <div class="advice-content">
+                <div class="advice-summary" id="adviceSummary">
+                    <div class="advice-score">
+                        <div class="score-circle" id="adviceScore">
+                            <span id="scoreValue">--</span>
+                            <small>建议分</small>
+                        </div>
+                    </div>
+                    <div class="advice-text">
+                        <h3 id="adviceTitle">分析中...</h3>
+                        <p id="adviceDescription">正在获取市场数据，请稍候...</p>
+                    </div>
+                </div>
+
+                <div class="advice-details">
+                    <div class="detail-item">
+                        <span class="detail-label">建议定投金额</span>
+                        <span id="suggestedAmount" class="detail-value">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">定投频率</span>
+                        <span id="suggestedFrequency" class="detail-value">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">风险等级</span>
+                        <span id="riskLevel" class="detail-value">--</span>
+                    </div>
+                </div>
+
+                <div class="strategy-cards">
+                    <div class="strategy-card" id="strategyVix">
+                        <h4>VIX策略</h4>
+                        <p id="vixStrategyText">--</p>
+                    </div>
+                    <div class="strategy-card" id="strategyPe">
+                        <h4>估值策略</h4>
+                        <p id="peStrategyText">--</p>
+                    </div>
+                    <div class="strategy-card" id="strategySentiment">
+                        <h4>情绪策略</h4>
+                        <p id="sentimentStrategyText">--</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="charts-section">
+            <div class="chart-header">
+                <h2>历史趋势</h2>
+                <div class="chart-tabs">
+                    <button class="tab-btn active" data-period="1M">1个月</button>
+                    <button class="tab-btn" data-period="3M">3个月</button>
+                    <button class="tab-btn" data-period="6M">6个月</button>
+                    <button class="tab-btn" data-period="1Y">1年</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>VIX 恐慌指数</h3>
+                    <p>衡量市场波动性和投资者恐慌程度的指标。VIX > 30 表示极度恐慌，是买入机会；VIX < 15 表示市场平静。</p>
+                    <ul>
+                        <li>< 15: 市场平静</li>
+                        <li>15-20: 轻度恐慌</li>
+                        <li>20-30: 恐慌</li>
+                        <li>> 30: 极度恐慌</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>PE 比率</h3>
+                    <p>市盈率反映股票估值水平。纳斯达克长期平均PE约25倍，可用于判断市场整体估值高低。</p>
+                    <ul>
+                        <li>< 20: 低估区域</li>
+                        <li>20-30: 合理区间</li>
+                        <li>30-40: 偏高</li>
+                        <li>> 40: 高估</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>恐惧贪婪指数</h3>
+                    <p>CNN开发的综合情绪指标，结合市场动量、股价强度、VIX等7个指标。逆向投资的重要参考。</p>
+                    <ul>
+                        <li>0-24: 极度恐惧</li>
+                        <li>25-49: 恐惧</li>
+                        <li>50: 中性</li>
+                        <li>51-74: 贪婪</li>
+                        <li>75-100: 极度贪婪</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>数据仅供参考，不构成投资建议。投资有风险，入市需谨慎。</p>
+            <p class="data-sources">数据来源: Yahoo Finance, Alpha Vantage, CNN Fear & Greed Index</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
