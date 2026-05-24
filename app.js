@@ -1,45 +1,107 @@
-// 纳斯达克市场数据监控 - 主应用
-class NasdaqDashboard {
+// 投资数据监控中心 - 主应用
+class InvestmentDashboard {
     constructor() {
         this.data = {
             vix: null,
             pe: null,
-            fearGreed: null
+            fearGreed: null,
+            ndx: null,
+            gold: null
         };
-        this.chart = null;
+        this.charts = {
+            trend: null,
+            ndx: null,
+            gold: null
+        };
         this.updateInterval = null;
         this.currentPeriod = '1M';
-        
-        // API端点
-        this.apis = {
-            vix: 'https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX',
-            nasdaq: 'https://query1.finance.yahoo.com/v8/finance/chart/%5EIXIC',
-            fearGreed: 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata'
-        };
+        this.currentTab = 'market';
+        this.ndxPeriod = '1M';
+        this.goldPeriod = '1M';
         
         // 历史数据缓存
         this.historicalData = {
             vix: [],
             pe: [],
-            fearGreed: []
+            fearGreed: [],
+            ndx: [],
+            gold: []
         };
         
         this.init();
     }
     
     init() {
+        this.setupTabNavigation();
         this.setupEventListeners();
         this.fetchAllData();
         this.updateInterval = setInterval(() => this.fetchAllData(), 5 * 60 * 1000);
     }
     
+    // Tab 导航切换
+    setupTabNavigation() {
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const targetTab = e.target.dataset.tab;
+                this.switchTab(targetTab);
+            });
+        });
+    }
+    
+    switchTab(tabName) {
+        // 更新导航按钮状态
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.tab === tabName) {
+                tab.classList.add('active');
+            }
+        });
+        
+        // 更新内容显示
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        this.currentTab = tabName;
+        
+        // 如果切换到NDX或黄金Tab，初始化对应图表
+        if (tabName === 'ndx' && !this.charts.ndx) {
+            this.updateNDXChart();
+        }
+        if (tabName === 'gold' && !this.charts.gold) {
+            this.updateGoldChart();
+        }
+    }
+    
     setupEventListeners() {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
+        // 市场指标图表周期切换
+        document.querySelectorAll('#tab-market .tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#tab-market .tab-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.currentPeriod = e.target.dataset.period;
-                this.updateChart();
+                this.updateTrendChart();
+            });
+        });
+        
+        // NDX图表周期切换
+        document.querySelectorAll('.ndx-tabs .tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.ndx-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.ndxPeriod = e.target.dataset.ndxPeriod;
+                this.updateNDXChart();
+            });
+        });
+        
+        // 黄金图表周期切换
+        document.querySelectorAll('.gold-tabs .tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.gold-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.goldPeriod = e.target.dataset.goldPeriod;
+                this.updateGoldChart();
             });
         });
     }
@@ -51,12 +113,23 @@ class NasdaqDashboard {
             await Promise.all([
                 this.fetchVIXData(),
                 this.fetchPEData(),
-                this.fetchFearGreedData()
+                this.fetchFearGreedData(),
+                this.fetchNDXData(),
+                this.fetchGoldData()
             ]);
             
             this.updateUI();
             this.generateInvestmentAdvice();
-            this.updateChart();
+            this.generateGoldAdvice();
+            this.updateTrendChart();
+            
+            // 如果当前在NDX或黄金Tab，更新对应图表
+            if (this.currentTab === 'ndx') {
+                this.updateNDXChart();
+            }
+            if (this.currentTab === 'gold') {
+                this.updateGoldChart();
+            }
             
         } catch (error) {
             console.error('数据获取失败:', error);
@@ -64,37 +137,11 @@ class NasdaqDashboard {
         }
     }
     
+    // ===== VIX数据 =====
     async fetchVIXData() {
-        try {
-            const mockVIX = this.generateMockVIX();
-            this.data.vix = mockVIX;
-            this.historicalData.vix = this.generateHistoricalData('vix', 30);
-        } catch (error) {
-            console.error('VIX数据获取失败:', error);
-            throw error;
-        }
-    }
-    
-    async fetchPEData() {
-        try {
-            const mockPE = this.generateMockPE();
-            this.data.pe = mockPE;
-            this.historicalData.pe = this.generateHistoricalData('pe', 30);
-        } catch (error) {
-            console.error('PE数据获取失败:', error);
-            throw error;
-        }
-    }
-    
-    async fetchFearGreedData() {
-        try {
-            const mockFearGreed = this.generateMockFearGreed();
-            this.data.fearGreed = mockFearGreed;
-            this.historicalData.fearGreed = this.generateHistoricalData('fearGreed', 30);
-        } catch (error) {
-            console.error('恐惧贪婪指数获取失败:', error);
-            throw error;
-        }
+        const mockVIX = this.generateMockVIX();
+        this.data.vix = mockVIX;
+        this.historicalData.vix = this.generateHistoricalData('vix', 365);
     }
     
     generateMockVIX() {
@@ -110,6 +157,13 @@ class NasdaqDashboard {
         };
     }
     
+    // ===== PE数据 =====
+    async fetchPEData() {
+        const mockPE = this.generateMockPE();
+        this.data.pe = mockPE;
+        this.historicalData.pe = this.generateHistoricalData('pe', 365);
+    }
+    
     generateMockPE() {
         const baseValue = 32;
         const variation = (Math.random() - 0.5) * 6;
@@ -121,6 +175,13 @@ class NasdaqDashboard {
             changePercent: parseFloat(((Math.random() - 0.5) * 3).toFixed(2)),
             timestamp: new Date().toISOString()
         };
+    }
+    
+    // ===== 恐惧贪婪指数 =====
+    async fetchFearGreedData() {
+        const mockFearGreed = this.generateMockFearGreed();
+        this.data.fearGreed = mockFearGreed;
+        this.historicalData.fearGreed = this.generateHistoricalData('fearGreed', 365);
     }
     
     generateMockFearGreed() {
@@ -144,6 +205,61 @@ class NasdaqDashboard {
         return '极度贪婪';
     }
     
+    // ===== 纳斯达克100数据 =====
+    async fetchNDXData() {
+        const mockNDX = this.generateMockNDX();
+        this.data.ndx = mockNDX;
+        this.historicalData.ndx = this.generateHistoricalData('ndx', 365);
+    }
+    
+    generateMockNDX() {
+        // 纳斯达克100当前约20000点左右
+        const basePrice = 19800;
+        const variation = (Math.random() - 0.5) * 400;
+        const price = basePrice + variation;
+        const change = (Math.random() - 0.5) * 200;
+        const changePercent = (change / price) * 100;
+        
+        return {
+            price: parseFloat(price.toFixed(2)),
+            change: parseFloat(change.toFixed(2)),
+            changePercent: parseFloat(changePercent.toFixed(2)),
+            open: parseFloat((price - change + (Math.random() - 0.5) * 50).toFixed(2)),
+            high: parseFloat((price + Math.random() * 100).toFixed(2)),
+            low: parseFloat((price - Math.random() * 100).toFixed(2)),
+            prevClose: parseFloat((price - change).toFixed(2)),
+            timestamp: new Date().toISOString()
+        };
+    }
+    
+    // ===== 黄金数据 =====
+    async fetchGoldData() {
+        const mockGold = this.generateMockGold();
+        this.data.gold = mockGold;
+        this.historicalData.gold = this.generateHistoricalData('gold', 365);
+    }
+    
+    generateMockGold() {
+        // AU9999 当前约550-580元/克
+        const basePrice = 565;
+        const variation = (Math.random() - 0.5) * 20;
+        const price = basePrice + variation;
+        const change = (Math.random() - 0.5) * 8;
+        const changePercent = (change / price) * 100;
+        
+        return {
+            price: parseFloat(price.toFixed(2)),
+            change: parseFloat(change.toFixed(2)),
+            changePercent: parseFloat(changePercent.toFixed(2)),
+            open: parseFloat((price - change + (Math.random() - 0.5) * 3).toFixed(2)),
+            high: parseFloat((price + Math.random() * 5).toFixed(2)),
+            low: parseFloat((price - Math.random() * 5).toFixed(2)),
+            prevClose: parseFloat((price - change).toFixed(2)),
+            timestamp: new Date().toISOString()
+        };
+    }
+    
+    // 生成历史数据
     generateHistoricalData(type, days) {
         const data = [];
         const now = new Date();
@@ -163,6 +279,14 @@ class NasdaqDashboard {
                 case 'fearGreed':
                     value = 30 + Math.random() * 40 + Math.sin(i / 7) * 15;
                     break;
+                case 'ndx':
+                    // NDX从18000涨到20000左右的趋势
+                    value = 18000 + (days - i) * (2000 / days) + Math.random() * 300;
+                    break;
+                case 'gold':
+                    // 黄金从520涨到565左右的趋势
+                    value = 520 + (days - i) * (45 / days) + Math.random() * 10;
+                    break;
             }
             
             data.push({
@@ -172,10 +296,13 @@ class NasdaqDashboard {
         }
         
         return data;
-    }    updateUI() {
+    }    // ===== 更新UI =====
+    updateUI() {
         this.updateVIXCard();
         this.updatePECard();
         this.updateFearGreedCard();
+        this.updateNDXCard();
+        this.updateGoldCard();
     }
     
     updateVIXCard() {
@@ -267,6 +394,41 @@ class NasdaqDashboard {
         }
     }
     
+    updateNDXCard() {
+        const ndx = this.data.ndx;
+        if (!ndx) return;
+        
+        document.getElementById('ndxPrice').textContent = ndx.price.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        
+        const changeEl = document.getElementById('ndxChange');
+        const changeSymbol = ndx.change >= 0 ? '+' : '';
+        changeEl.textContent = `${changeSymbol}${ndx.change.toFixed(2)} (${changeSymbol}${ndx.changePercent.toFixed(2)}%)`;
+        changeEl.className = `price-change ${ndx.change >= 0 ? 'positive' : 'negative'}`;
+        
+        document.getElementById('ndxOpen').textContent = ndx.open.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        document.getElementById('ndxHigh').textContent = ndx.high.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        document.getElementById('ndxLow').textContent = ndx.low.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        document.getElementById('ndxPrevClose').textContent = ndx.prevClose.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+    }
+    
+    updateGoldCard() {
+        const gold = this.data.gold;
+        if (!gold) return;
+        
+        document.getElementById('goldPrice').textContent = gold.price.toFixed(2);
+        
+        const changeEl = document.getElementById('goldChange');
+        const changeSymbol = gold.change >= 0 ? '+' : '';
+        changeEl.textContent = `${changeSymbol}${gold.change.toFixed(2)} (${changeSymbol}${gold.changePercent.toFixed(2)}%)`;
+        changeEl.className = `price-change ${gold.change >= 0 ? 'positive' : 'negative'}`;
+        
+        document.getElementById('goldOpen').textContent = gold.open.toFixed(2);
+        document.getElementById('goldHigh').textContent = gold.high.toFixed(2);
+        document.getElementById('goldLow').textContent = gold.low.toFixed(2);
+        document.getElementById('goldPrevClose').textContent = gold.prevClose.toFixed(2);
+    }
+    
+    // ===== 定投建议 =====
     generateInvestmentAdvice() {
         const vix = this.data.vix?.value || 20;
         const pe = this.data.pe?.value || 30;
@@ -338,7 +500,9 @@ class NasdaqDashboard {
         document.getElementById('riskLevel').textContent = risk;
         
         this.updateStrategyCards(vix, pe, fearGreed);
-    }    updateStrategyCards(vix, pe, fearGreed) {
+    }
+    
+    updateStrategyCards(vix, pe, fearGreed) {
         let vixStrategy;
         if (vix > 30) vixStrategy = 'VIX > 30，极度恐慌，强烈建议加大定投';
         else if (vix > 25) vixStrategy = 'VIX > 25，恐慌情绪明显，适合增加定投';
@@ -363,20 +527,203 @@ class NasdaqDashboard {
         else if (fearGreed > 60) sentimentStrategy = '贪婪情绪，减少定投金额';
         else sentimentStrategy = '情绪中性，按计划执行';
         document.getElementById('sentimentStrategyText').textContent = sentimentStrategy;
+    }    // ===== 黄金加仓建议（核心算法）=====
+    generateGoldAdvice() {
+        const gold = this.data.gold;
+        if (!gold) return;
+        
+        const price = gold.price;
+        const change = gold.change;
+        const changePercent = gold.changePercent;
+        
+        // 获取历史数据计算技术指标
+        const goldHistory = this.historicalData.gold;
+        const prices = goldHistory.map(d => d.value);
+        
+        // 计算移动平均线
+        const ma20 = this.calculateMA(prices, 20);
+        const ma60 = this.calculateMA(prices, 60);
+        
+        // 计算RSI
+        const rsi = this.calculateRSI(prices, 14);
+        
+        // 计算布林带
+        const bollinger = this.calculateBollinger(prices, 20);
+        
+        // 综合评分系统
+        let score = 50; // 基础分
+        
+        // 1. 趋势分析（价格vs均线）
+        if (price > ma20 && ma20 > ma60) score += 15; // 多头排列
+        else if (price < ma20 && ma20 < ma60) score -= 15; // 空头排列
+        else if (price > ma20) score += 5; // 短期向上
+        
+        // 2. RSI分析
+        if (rsi < 30) score += 20; // 超卖，买入机会
+        else if (rsi < 40) score += 10;
+        else if (rsi > 70) score -= 20; // 超买，谨慎
+        else if (rsi > 60) score -= 10;
+        
+        // 3. 布林带分析
+        if (price < bollinger.lower) score += 15; // 跌破下轨，反弹机会
+        else if (price > bollinger.upper) score -= 15; // 突破上轨，可能回调
+        
+        // 4. 当日涨跌分析
+        if (changePercent < -2) score += 10; // 大跌，逢低吸纳
+        else if (changePercent > 2) score -= 10; // 大涨，不宜追高
+        
+        // 限制分数范围
+        score = Math.max(0, Math.min(100, score));
+        
+        // 生成建议
+        this.renderGoldAdvice(score, price, ma20, ma60, rsi, bollinger, changePercent);
     }
     
-    updateChart() {
+    calculateMA(prices, period) {
+        if (prices.length < period) return prices[prices.length - 1];
+        const sum = prices.slice(-period).reduce((a, b) => a + b, 0);
+        return sum / period;
+    }
+    
+    calculateRSI(prices, period) {
+        if (prices.length < period + 1) return 50;
+        
+        let gains = 0;
+        let losses = 0;
+        
+        for (let i = prices.length - period; i < prices.length; i++) {
+            const change = prices[i] - prices[i - 1];
+            if (change > 0) gains += change;
+            else losses += Math.abs(change);
+        }
+        
+        const avgGain = gains / period;
+        const avgLoss = losses / period;
+        
+        if (avgLoss === 0) return 100;
+        const rs = avgGain / avgLoss;
+        return 100 - (100 / (1 + rs));
+    }
+    
+    calculateBollinger(prices, period) {
+        const ma = this.calculateMA(prices, period);
+        const stdDev = this.calculateStdDev(prices.slice(-period), ma);
+        
+        return {
+            upper: ma + (2 * stdDev),
+            middle: ma,
+            lower: ma - (2 * stdDev)
+        };
+    }
+    
+    calculateStdDev(values, mean) {
+        const squareDiffs = values.map(value => Math.pow(value - mean, 2));
+        const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / values.length;
+        return Math.sqrt(avgSquareDiff);
+    }
+    
+    renderGoldAdvice(score, price, ma20, ma60, rsi, bollinger, changePercent) {
+        // 信号图标和标题
+        const signalIcon = document.getElementById('signalIcon');
+        const adviceTitle = document.getElementById('goldAdviceTitle');
+        const adviceDesc = document.getElementById('goldAdviceDesc');
+        
+        let icon, title, desc, action, ratio, target, stopLoss;
+        
+        if (score >= 75) {
+            icon = '🚀';
+            title = '强烈建议加仓';
+            desc = '技术面显示黄金处于超卖区域，RSI偏低，价格接近布林带下轨，是较好的买入时机。';
+            action = '大幅加仓';
+            ratio = '建议仓位的 30-50%';
+            target = (price * 1.05).toFixed(2);
+            stopLoss = (price * 0.97).toFixed(2);
+        } else if (score >= 55) {
+            icon = '✅';
+            title = '建议加仓';
+            desc = '技术指标偏向积极，短期趋势向上，可适度增加黄金基金仓位。';
+            action = '适度加仓';
+            ratio = '建议仓位的 15-25%';
+            target = (price * 1.04).toFixed(2);
+            stopLoss = (price * 0.975).toFixed(2);
+        } else if (score >= 40) {
+            icon = '➡️';
+            title = '持仓观望';
+            desc = '市场信号中性，建议维持现有仓位，等待更明确的入场信号。';
+            action = '维持现状';
+            ratio = '暂不新增';
+            target = (price * 1.03).toFixed(2);
+            stopLoss = (price * 0.98).toFixed(2);
+        } else if (score >= 25) {
+            icon = '⚠️';
+            title = '谨慎减仓';
+            desc = '技术指标显示黄金可能超买，RSI偏高，建议适当降低仓位。';
+            action = '逐步减仓';
+            ratio = '减仓 20-30%';
+            target = (price * 1.02).toFixed(2);
+            stopLoss = (price * 0.985).toFixed(2);
+        } else {
+            icon = '🛑';
+            title = '建议减仓';
+            desc = '技术面显示严重超买，价格突破布林带上轨，建议大幅减仓或清仓观望。';
+            action = '大幅减仓';
+            ratio = '减仓 50%以上';
+            target = (price * 1.01).toFixed(2);
+            stopLoss = (price * 0.99).toFixed(2);
+        }
+        
+        signalIcon.textContent = icon;
+        adviceTitle.textContent = title;
+        adviceDesc.textContent = desc;
+        
+        document.getElementById('goldAction').textContent = action;
+        document.getElementById('goldRatio').textContent = ratio;
+        document.getElementById('goldTarget').textContent = `¥${target}`;
+        document.getElementById('goldStopLoss').textContent = `¥${stopLoss}`;
+        
+        // 技术面分析
+        let techText = `当前金价 ¥${price.toFixed(2)}。`;
+        techText += `RSI指标 ${rsi.toFixed(1)}，`;
+        if (rsi < 30) techText += '处于超卖区域，反弹概率大。';
+        else if (rsi > 70) techText += '处于超买区域，回调风险高。';
+        else techText += '处于中性区域。';
+        
+        techText += ` 价格${price > ma20 ? '高于' : '低于'}20日均线(¥${ma20.toFixed(2)})，`;
+        techText += `${price > bollinger.upper ? '突破布林带上轨' : price < bollinger.lower ? '跌破布林带下轨' : '在布林带中轨附近'}。`;
+        
+        document.getElementById('techAnalysis').textContent = techText;
+        
+        // 基本面分析
+        let fundText = '黄金作为避险资产，受美联储货币政策、地缘政治风险、美元走势影响较大。';
+        fundText += '当前建议关注：美联储利率决议、美元指数DXY走势、全球地缘政治局势。';
+        if (changePercent > 1) fundText += ' 今日金价上涨，避险情绪升温。';
+        else if (changePercent < -1) fundText += ' 今日金价回调，或为入场机会。';
+        
+        document.getElementById('fundAnalysis').textContent = fundText;
+        
+        // 风险提示
+        let riskText = '黄金投资存在价格波动风险，建议：';
+        riskText += '1) 不要满仓操作，保持适当现金比例；';
+        riskText += '2) 设置止损位，控制单笔亏损；';
+        riskText += '3) 分批建仓，避免一次性大额投入；';
+        riskText += '4) 长期持有，避免频繁交易。';
+        
+        document.getElementById('riskAnalysis').textContent = riskText;
+    }
+    
+    // ===== 图表渲染 =====
+    updateTrendChart() {
         const ctx = document.getElementById('trendChart');
         if (!ctx) return;
         
-        const days = this.getPeriodDays();
+        const days = this.getPeriodDays(this.currentPeriod);
         const labels = this.historicalData.vix.slice(-days).map(d => d.date.slice(5));
         
-        if (this.chart) {
-            this.chart.destroy();
+        if (this.charts.trend) {
+            this.charts.trend.destroy();
         }
         
-        this.chart = new Chart(ctx, {
+        this.charts.trend = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -402,67 +749,113 @@ class NasdaqDashboard {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: {
-                        labels: {
-                            color: '#94a3b8'
-                        }
-                    }
+                    legend: { labels: { color: '#94a3b8' } }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
-                        },
-                        ticks: {
-                            color: '#94a3b8'
-                        }
-                    },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
-                        },
-                        ticks: {
-                            color: '#94a3b8'
-                        },
-                        title: {
-                            display: true,
-                            text: 'VIX',
-                            color: '#ef4444'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false
-                        },
-                        ticks: {
-                            color: '#94a3b8'
-                        },
-                        title: {
-                            display: true,
-                            text: '恐惧贪婪',
-                            color: '#8b5cf6'
-                        },
-                        min: 0,
-                        max: 100
-                    }
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' }, title: { display: true, text: 'VIX', color: '#ef4444' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#94a3b8' }, title: { display: true, text: '恐惧贪婪', color: '#8b5cf6' }, min: 0, max: 100 }
                 }
             }
         });
     }
     
-    getPeriodDays() {
-        switch(this.currentPeriod) {
+    updateNDXChart() {
+        const ctx = document.getElementById('ndxChart');
+        if (!ctx) return;
+        
+        const days = this.getPeriodDays(this.ndxPeriod);
+        const data = this.historicalData.ndx.slice(-days);
+        const labels = data.map(d => d.date.slice(5));
+        
+        if (this.charts.ndx) {
+            this.charts.ndx.destroy();
+        }
+        
+        this.charts.ndx = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '纳斯达克100指数',
+                    data: data.map(d => d.value),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'NDX: ' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+    
+    updateGoldChart() {
+        const ctx = document.getElementById('goldChart');
+        if (!ctx) return;
+        
+        const days = this.getPeriodDays(this.goldPeriod);
+        const data = this.historicalData.gold.slice(-days);
+        const labels = data.map(d => d.date.slice(5));
+        
+        if (this.charts.gold) {
+            this.charts.gold.destroy();
+        }
+        
+        this.charts.gold = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'AU9999 (元/克)',
+                    data: data.map(d => d.value),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '金价: ¥' + context.parsed.y.toFixed(2) + '/克';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+    
+    getPeriodDays(period) {
+        switch(period) {
             case '1M': return 30;
             case '3M': return 90;
             case '6M': return 180;
@@ -488,8 +881,9 @@ class NasdaqDashboard {
     }
 }
 
+// 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    new NasdaqDashboard();
+    new InvestmentDashboard();
 });
 
 function refreshData() {
